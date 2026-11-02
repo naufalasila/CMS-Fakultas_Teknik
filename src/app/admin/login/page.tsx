@@ -33,7 +33,7 @@ export default function LoginPage() {
         method: "POST",
         body: { username, password },
       });
-      auth.save(res.token, res.user);
+      auth.save(res.user);
       router.replace("/admin");
     } catch (err) {
       setError(errorMessage(err));

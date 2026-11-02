@@ -13,6 +13,7 @@ const nav = [
   { href: "/admin/jadwal", label: "Jadwal Kuliah", icon: "◷" },
   { href: "/admin/prodi", label: "Program Studi", icon: "◈" },
   { href: "/admin/running-text", label: "Running Text", icon: "⇆" },
+  { href: "/admin/password", label: "Ganti Password", icon: "⚿" },
 ];
 
 const noop = () => () => {};
@@ -21,8 +22,9 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const token = useSyncExternalStore(noop, auth.getToken, () => undefined);
+  // Sesi ada jika profil tersimpan (cookie non-HttpOnly); token sebenarnya ada di cookie HttpOnly.
   const user = useSyncExternalStore(noop, auth.getUserRaw, () => null);
+  const token = user; // sentinel: profil ada => coba verifikasi sesi ke backend
   const parsedUser = user ? (JSON.parse(user) as User) : null;
 
   const [session, setSession] = useState<{ state: "checking" | "ok" | "offline"; message?: string }>({ state: "checking" });
