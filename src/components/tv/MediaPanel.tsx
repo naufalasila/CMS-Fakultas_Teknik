@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- media berasal dari backend (URL dinamis) */
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { mediaUrl } from "@/lib/api";
 import type { Berita } from "@/lib/types";
 import { HEADER_HEIGHT, SIDE_WIDTH, mainHeight, panelBox } from "./constants";
@@ -16,6 +17,41 @@ type Props = {
 export default function MediaPanel({ berita, rotationKey, loopVideo, onVideoEnded, stageW, stageH }: Props) {
   const width = stageW - SIDE_WIDTH * 2;
   const src = berita?.media ? mediaUrl(berita.media) : "";
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [blockedSound, setBlockedSound] = useState(false);
+  const isVideo = berita?.tipe_media === "video" && !!src;
+
+  // Browser memblokir autoplay bersuara sebelum ada interaksi; coba bersuara dulu, fallback ke muted.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!isVideo || !v) return;
+    v.muted = false;
+    v.play()
+      .then(() => setBlockedSound(false))
+      .catch(() => {
+        v.muted = true;
+        setBlockedSound(true);
+        v.play().catch(() => {});
+      });
+  }, [isVideo, src, rotationKey]);
+
+  useEffect(() => {
+    if (!blockedSound) return;
+    const unlock = () => {
+      const v = videoRef.current;
+      if (v) {
+        v.muted = false;
+        v.play().catch(() => {});
+      }
+      setBlockedSound(false);
+    };
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, [blockedSound]);
 
   return (
     <section
@@ -27,10 +63,9 @@ export default function MediaPanel({ berita, rotationKey, loopVideo, onVideoEnde
         <div key={`${berita.id}-${rotationKey}`} className="tv-fade-in absolute inset-0">
           {berita.tipe_media === "video" ? (
             <video
+              ref={videoRef}
               src={src}
               className="h-full w-full object-contain"
-              autoPlay
-              muted
               playsInline
               loop={loopVideo}
               onEnded={onVideoEnded}
@@ -49,6 +84,15 @@ export default function MediaPanel({ berita, rotationKey, loopVideo, onVideoEnde
           <p className="font-bold text-navy-800/80" style={{ fontSize: 72 }}>
             {berita ? berita.judul : "Fakultas Teknik Unismuh Makassar"}
           </p>
+        </div>
+      )}
+
+      {isVideo && blockedSound && (
+        <div
+          className="absolute right-[40px] top-[40px] rounded-full bg-black/60 px-[36px] py-[16px] font-semibold text-white"
+          style={{ fontSize: 40 }}
+        >
+          🔇 Klik layar untuk mengaktifkan suara
         </div>
       )}
 
