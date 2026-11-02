@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: var(--font-jakarta);
+  --color-navy-950: var(--navy-950);
+  --color-navy-900: var(--navy-900);
+  --color-navy-800: var(--navy-800);
+  --color-navy-700: var(--navy-700);
+  --color-accent-400: #e0384f;
+  --color-accent-500: #c8102e;
+  --color-accent-700: #9b0b23;
+  --color-ft-red: var(--ft-red);
+  --color-neu: var(--neu-bg);
+}
+
+/* ===== Neumorphism (soft UI) =====
+   Elemen memakai warna latar yang sama dengan halaman; kedalaman dibentuk oleh
+   bayangan terang (kiri-atas) dan gelap (kanan-bawah). */
+:root {
+  --navy-950: #050f2b;
+  --navy-900: #0a1a45;
+  --navy-800: #102663;
+  --navy-700: #173384;
+  --ft-red: #c8102e;
+  --neu-bg: #e4e9f2;
+  --neu-light: #ffffff;
+  --neu-dark: #bec6d4;
+}
+
+/* Dark mode (khusus halaman admin): kelas `dark` dipasang di <html>.
+   Warna navy dipakai sebagai teks, jadi di mode gelap dibalik menjadi terang. */
+.dark {
+  color-scheme: dark;
+  --navy-950: #02040a;
+  --navy-900: #e7ecf6;
+  --navy-800: #cbd5ea;
+  --navy-700: #a9bbe2;
+  --ft-red: #ef4b62;
+  --neu-bg: #252a34;
+  --neu-light: #313744;
+  --neu-dark: #171a21;
+  --color-slate-400: #6f798c;
+  --color-slate-500: #98a2b5;
+  --color-slate-600: #b2bbca;
+  --color-slate-700: #cdd4df;
+  --color-emerald-700: #4ade80;
+  --color-red-700: #f87171;
+}
+
+@utility neu-raised {
+  box-shadow: 8px 8px 16px var(--neu-dark), -8px -8px 16px var(--neu-light);
+}
+@utility neu-raised-sm {
+  box-shadow: 4px 4px 8px var(--neu-dark), -4px -4px 8px var(--neu-light);
+}
+@utility neu-inset {
+  box-shadow: inset 6px 6px 12px var(--neu-dark), inset -6px -6px 12px var(--neu-light);
+}
+@utility neu-inset-sm {
+  box-shadow: inset 3px 3px 6px var(--neu-dark), inset -3px -3px 6px var(--neu-light);
+}
+@utility neu-flat {
+  box-shadow: none;
+}
+
+/* Versi untuk kanvas TV 5079x2748 (diperkecil ~0.4–0.75x saat tampil). */
+@utility neu-tv-raised {
+  box-shadow: 36px 36px 72px var(--neu-dark), -36px -36px 72px var(--neu-light);
+}
+@utility neu-tv-raised-sm {
+  box-shadow: 16px 16px 32px var(--neu-dark), -16px -16px 32px var(--neu-light);
+}
+@utility neu-tv-inset {
+  box-shadow: inset 28px 28px 56px var(--neu-dark), inset -28px -28px 56px var(--neu-light);
+}
+@utility neu-tv-inset-sm {
+  box-shadow: inset 12px 12px 24px var(--neu-dark), inset -12px -12px 24px var(--neu-light);
+}
+
+body {
+  background: var(--color-neu);
+  color: var(--color-navy-900);
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+@keyframes tv-fade-in {
+  from { opacity: 0; transform: scale(1.02); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes tv-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes tv-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes tv-scroll-y {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+@keyframes tv-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.tv-fade-in { animation: tv-fade-in 700ms ease-out both; }
+.tv-progress { animation: tv-progress linear both; transform-origin: left; }
+.tv-marquee { animation: tv-marquee linear infinite; }
+.tv-scroll-y { animation: tv-scroll-y linear infinite; }
+.tv-pulse { animation: tv-pulse 1.6s ease-in-out infinite; }
