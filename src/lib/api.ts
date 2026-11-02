@@ -1,6 +1,9 @@
 import type { ApiResponse } from "./types";
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5012").replace(/\/$/, "");
+// Prioritas: NEXT_PUBLIC_API_URL (Vercel env) lalu fallback ke backend produksi.
+// Untuk development lokal, set NEXT_PUBLIC_API_URL=http://localhost:5012 di .env.local.
+const DEFAULT_API_URL = "https://129-225-1-48.sslip.io";
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL).replace(/\/$/, "");
 
 const USER_KEY = "tv_admin_user";
 const EXPIRY_KEY = "tv_admin_exp";
