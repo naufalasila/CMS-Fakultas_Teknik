@@ -50,9 +50,17 @@ function fromBerita(b: Berita): FormState {
   return { ...emptyForm, ...b, file: null, hapus_media: false };
 }
 
-function MediaPreview({ src, video, className }: { src: string; video: boolean; className: string }) {
+function MediaPreview({ src, video, className, poster }: { src: string; video: boolean; className: string; poster?: string }) {
   if (!src) return <div className={`flex items-center justify-center bg-neu text-xs text-slate-400 neu-inset-sm ${className}`}>Tanpa media</div>;
-  return video ? <video src={src} muted className={`bg-black object-cover ${className}`} /> : <img src={src} alt="" className={`object-cover ${className}`} />;
+  if (video && poster) return <img src={poster} alt="" className={`bg-black object-cover ${className}`} />;
+  return video ? <video src={src} muted preload="metadata" className={`bg-black object-cover ${className}`} /> : <img src={src} alt="" className={`object-cover ${className}`} />;
+}
+
+function StatusMedia({ b }: { b: Berita }) {
+  if (b.tipe_media !== "video" || !b.media) return null;
+  if (b.status_media === "proses") return <Badge tone="blue">⏳ Mengoptimalkan video…</Badge>;
+  if (b.status_media === "gagal") return <Badge tone="red">Optimasi gagal, video asli dipakai</Badge>;
+  return null;
 }
 
 export default function BeritaPage() {
@@ -82,6 +90,14 @@ export default function BeritaPage() {
     const t = setTimeout(load);
     return () => clearTimeout(t);
   }, [load]);
+
+  // Selama ada video yang sedang dikonversi di server, segarkan daftar berkala.
+  const adaProses = list.some((b) => b.status_media === "proses");
+  useEffect(() => {
+    if (!adaProses) return;
+    const id = setInterval(load, 5000);
+    return () => clearInterval(id);
+  }, [adaProses, load]);
 
   const setPreviewUrl = (url: string) => {
     setPreview((prev) => {
@@ -119,6 +135,9 @@ export default function BeritaPage() {
       } else {
         await apiFetch("/api/admin/berita", { method: "POST", body: toFormData(form), withAuth: true });
         toast.show("Berita berhasil ditambahkan");
+      }
+      if (form.file?.type.startsWith("video")) {
+        toast.show("Video sedang dioptimalkan di server dan akan tampil di TV setelah selesai");
       }
       setOpen(false);
       load();
@@ -188,7 +207,7 @@ export default function BeritaPage() {
                 <tr key={b.id} className="transition-shadow hover:neu-inset-sm [&>td:first-child]:rounded-l-xl [&>td:last-child]:rounded-r-xl">
                   <td className={td}>
                     <div className="relative">
-                      <MediaPreview src={mediaUrl(b.media)} video={b.tipe_media === "video"} className="h-16 w-28 rounded-md" />
+                      <MediaPreview src={mediaUrl(b.media)} poster={b.thumbnail ? mediaUrl(b.thumbnail) : undefined} video={b.tipe_media === "video"} className="h-16 w-28 rounded-md" />
                       {b.media && (
                         <span className="absolute bottom-1 left-1">
                           <Badge tone={b.tipe_media === "video" ? "red" : "blue"}>{b.tipe_media === "video" ? "Video" : "Gambar"}</Badge>
@@ -199,6 +218,9 @@ export default function BeritaPage() {
                   <td className={`${td} max-w-md`}>
                     <p className="font-semibold text-navy-900">{b.judul}</p>
                     <p className="mt-1 line-clamp-2 text-slate-500">{b.caption}</p>
+                    <div className="mt-1.5">
+                      <StatusMedia b={b} />
+                    </div>
                   </td>
                   <td className={td}>{b.urutan}</td>
                   <td className={td}>{b.tipe_media === "video" && b.media ? "Sampai selesai" : `${b.durasi_detik} dtk`}</td>
@@ -234,7 +256,7 @@ export default function BeritaPage() {
           <Field label="Caption" hint="Ditampilkan di kolom kiri layar TV.">
             <Textarea rows={5} value={form.caption} onChange={(e) => setForm({ ...form, caption: e.target.value })} required />
           </Field>
-          <Field label="Media (gambar / video)" hint="Format: JPG, PNG, WEBP, GIF, MP4, WEBM, MOV. Maks 200MB.">
+          <Field label="Media (gambar / video)" hint="Format: JPG, PNG, WEBP, GIF, MP4, WEBM, MOV. Maks 200MB. Video otomatis dikonversi ke MP4 1080p agar ringan & mulus di TV.">
             <Input
               type="file"
               accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime"

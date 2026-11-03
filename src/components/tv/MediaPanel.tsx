@@ -65,7 +65,10 @@ export default function MediaPanel({ berita, rotationKey, loopVideo, onVideoEnde
             <video
               ref={videoRef}
               src={src}
+              poster={berita.thumbnail ? mediaUrl(berita.thumbnail) : undefined}
               className="h-full w-full object-contain"
+              preload="auto"
+              disablePictureInPicture
               playsInline
               loop={loopVideo}
               onEnded={onVideoEnded}

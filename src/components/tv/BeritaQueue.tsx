@@ -10,7 +10,15 @@ function Thumb({ b }: { b: Berita }) {
     return <div className="flex h-full w-full items-center justify-center bg-neu text-slate-400 neu-tv-inset-sm" style={{ fontSize: 34 }}>Tanpa media</div>;
   }
   if (b.tipe_media === "video") {
-    return <video src={`${mediaUrl(b.media)}#t=1`} muted preload="metadata" className="h-full w-full object-cover" />;
+    // Thumbnail gambar (bukan <video>) agar TV tidak men-decode beberapa video sekaligus.
+    return (
+      <div className="relative h-full w-full">
+        {b.thumbnail && <img src={mediaUrl(b.thumbnail)} alt="" className="h-full w-full object-cover" />}
+        <span className="absolute inset-0 flex items-center justify-center text-white/90" style={{ fontSize: 90 }}>
+          ▶
+        </span>
+      </div>
+    );
   }
   return <img src={mediaUrl(b.media)} alt="" className="h-full w-full object-cover" />;
 }

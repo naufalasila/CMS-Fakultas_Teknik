@@ -13,6 +13,8 @@ export type Berita = {
   caption: string;
   media: string;
   tipe_media: TipeMedia;
+  thumbnail?: string;
+  status_media?: "siap" | "proses" | "gagal";
   durasi_detik: number;
   urutan: number;
   aktif: boolean;
